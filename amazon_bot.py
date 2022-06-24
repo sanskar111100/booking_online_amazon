@@ -5,6 +5,8 @@ from selenium.webdriver.common.keys import Keys
 import time, datetime, random,sys
 from credentials import Email, User
 import smtplib
+from billiard.pool import Pool
+from otpRetriever import *
 
 class Product:
     """ Product class with helper functions. """
@@ -15,7 +17,7 @@ class Product:
         could result in temporarily block. """
 
         self.amazon_credential = User()
-        self.email_credential = Email()
+        # self.email_credential = Email()
         self.product = kwargs['p_url']
     
     def launch_bot(self):
@@ -48,7 +50,7 @@ class Product:
         
         try:
         	self.browser_emulator.find_element_by_xpath\
-            ('''//*[@id="priceblock_ourprice"]''')
+            ('''//*[@id="buy-now-button"]''')
         
         except:
             try:
@@ -75,24 +77,71 @@ class Product:
 
     def add_to_cart(self):
         """ Helper function to add product to cart."""
+        print("Buy button reached!")
 
-        self.browser_emulator.find_element_by_xpath('//*[@id="add-to-cart-button"]').click()
-        self.email_notification()
+        self.browser_emulator.find_element_by_xpath('//*[@id="buy-now-button"]').click()
+        #self.email_notification()
+        print("Added to cart by buy button!!")
+
+        #pp-uIL6vG-89
+        time.sleep(10)
+        self.browser_emulator.find_element_by_xpath('//*[@name="addCreditCardVerificationNumber0"]').send_keys("777",Keys.RETURN)
+        print("Card found and clicked")
+
+        #
+        time.sleep(10)
+        self.browser_emulator.find_element_by_xpath('//*[@name="placeYourOrder1"]').click()
+        print("OrDeR PlAcEd! haha!")
+
+        #otpValue
+        # try:
+        # 	self.browser_emulator.find_element_by_xpath('''//*[@id="otpValue"]''')
+        #     print("Payement page found")
+        # except:
+        #     print("Payment not found!")
+
+        # OTP = fetchOTP()
+
+        val = input("Enter OTP : ")
+        print(val)
+
+        while 1:
+            time.sleep(5)
+            try:
+                #self.browser_emulator.find_element_by_xpath('//*[@id="otpValue"]'):
+                self.browser_emulator.find_element_by_xpath('//*[@id="otpValue"]').send_keys(val,Keys.RETURN)
+                print("Card found and clicked")
+                break
+            except:
+                print("retry pay page")
+
+        time.sleep(60)
+
         self.browser_emulator.quit()
 
-    def email_notification(self):
-        """ Sends email to user to alert that product have been added to cart.
-        Server in this function is setup for Outlook.com, it'll be different for other
-        email services. """
+    # def email_notification(self):
+    #     """ Sends email to user to alert that product have been added to cart.
+    #     Server in this function is setup for Outlook.com, it'll be different for other
+    #     email services. """
 
-        email = '''FROM: {user}\nTO: {to}\nSUBJECT: {subject}\n\n{body}'''\
-        .format(user = self.email_credential.EMAIL,to=self.email_credential.RECEIVER,\
-            subject=self.email_credential.SUBJECT,body=self.email_credential.BODY)
-        server = smtplib.SMTP('smtp-mail.outlook.com',25)
-        server.starttls()
-        server.login(self.email_credential.EMAIL,self.email_credential.EMAILPASSWD)
-        server.sendmail(self.email_credential.EMAIL,self.email_credential.RECEIVER, email)
-        server.quit()
+    #     email = '''FROM: {user}\nTO: {to}\nSUBJECT: {subject}\n\n{body}'''\
+    #     .format(user = self.email_credential.EMAIL,to=self.email_credential.RECEIVER,\
+    #         subject=self.email_credential.SUBJECT,body=self.email_credential.BODY)
+    #     server = smtplib.SMTP('smtp-mail.outlook.com',25)
+    #     server.starttls()
+    #     server.login(self.email_credential.EMAIL,self.email_credential.EMAILPASSWD)
+    #     server.sendmail(self.email_credential.EMAIL,self.email_credential.RECEIVER, email)
+    #     server.quit()
+
+# def multiCall(i):
+
+#     print(f"Call id : {i[0]}")
+#     product = i[1]
+#     bot = Product(p_url=product)
+#     bot.launch_bot()
+#     bot.user_login_session()
+#     while 1:
+#         bot.check_availability()
 
 if __name__ == '__main__':
     """ This script is executed, when you run .py file. """

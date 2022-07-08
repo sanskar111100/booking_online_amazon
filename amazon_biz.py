@@ -203,7 +203,7 @@ class Product:
 
         try:
             options = Options()
-            options.set_headless(headless=true)
+            options.set_headless(headless=True)
             self.browser_emulator = webdriver.Firefox(firefox_options=options)
         except Exception as e:
             print(e)

@@ -59,7 +59,6 @@ networkx==2.7.1
 numexpr==2.8.1
 numpy==1.22.3
 oauthlib==3.2.0
-opencv-python==4.5.5
 opt-einsum==3.3.0
 outcome==1.2.0
 packaging==21.3

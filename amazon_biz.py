@@ -276,10 +276,10 @@ class Product:
         #txtPassword
         self.browser_emulator.find_element_by_xpath('//*[@id="txtPassword"]').send_keys(self.debitCard.staticPass)
         self.print("Entered static Pass!")
-        self.browser_emulator.find_element_by_xpath('//*[@id="cmdSubmitStatic"]').click()
-        self.print("Payment Done!!")
+        # self.browser_emulator.find_element_by_xpath('//*[@id="cmdSubmitStatic"]').click()
+        # self.print("Payment Done!!")
 
-        time.sleep(60)
+        # time.sleep(60)
 
         self.browser_emulator.quit()
 

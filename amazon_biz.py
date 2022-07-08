@@ -202,7 +202,7 @@ class Product:
         It goes to login page first. """
 
         options = Options()
-        options.set_headless(headless=False)
+        options.set_headless(headless=true)
         self.browser_emulator = webdriver.Firefox(firefox_options=options)
         
         # chrome_options = Options()

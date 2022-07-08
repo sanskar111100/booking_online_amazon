@@ -3,8 +3,8 @@
 class User:
 	""" Base class of User. """
 
-	UNAME = ''
-	PASSWD = ''
+	UNAME = 'oswaltrading901@gmail.com'
+	PASSWD = 'oswal@1234'
 
 class Email:
 	""" Class to store email credentials for notification on product 

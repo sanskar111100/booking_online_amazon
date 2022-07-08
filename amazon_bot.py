@@ -7,6 +7,7 @@ from credentials import Email, User
 import smtplib
 from billiard.pool import Pool
 from otpRetriever import *
+import pandas as pd
 
 class Product:
     """ Product class with helper functions. """
@@ -115,7 +116,7 @@ class Product:
             except:
                 print("retry pay page")
 
-        time.sleep(60)
+        time.sleep
 
         self.browser_emulator.quit()
 

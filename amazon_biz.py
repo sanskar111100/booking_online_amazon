@@ -1,4 +1,5 @@
 """ Libraies need to run script."""
+from this import d
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 #from selenium.webdriver.chrome.options import Options
@@ -30,10 +31,11 @@ class AmazonID:
         self.phoneNumber = phoneNumber
 
 class OrderEntry:
-    def __init__(self, link, AmazonID, DebitCard):
+    def __init__(self, link, AmazonID, DebitCard, poNumber):
         self.link = link
         self.AmazonID = AmazonID
         self.DebitCard = DebitCard
+        self.poNumber = poNumber
 
 class Product:
     """ Product class with helper functions. """
@@ -49,6 +51,8 @@ class Product:
         # self.email_credential = Email()
         self.product = kwargs['p_url']
         self.debitCard = kwargs['debit_card']
+        self.amazonId = kwargs['amazon_id']
+        self.poNumber = kwargs['po_number']
     
     def print(self, x):
         print(f"{now.time()} ----- {self.amazon_credential.UNAME} ------ {x}")
@@ -59,7 +63,9 @@ class Product:
             try:
                 self.browser_emulator.find_element_by_xpath(xpath).click()
                 break
-            except:
+            except Exception as e:
+                if times==29:
+                    print(e)
                 time.sleep(0.5)
                 times += 1
         if times>=30:
@@ -71,12 +77,125 @@ class Product:
             try:
                 self.browser_emulator.find_element_by_xpath(xpath).send_keys(typeValue)
                 break
-            except:
+            except Exception as e:
+                if times==29:
+                    print(e)
                 time.sleep(0.5)
                 times += 1
         if times>=30:
             raise Exception("Sorry, no numbers below zero")
 
+
+    def buyUsingCreditCard(self):
+        #SelectableAddCreditCard
+        #time.sleep(2)
+        #self.browser_emulator.find_element_by_xpath('//*[@value="SelectableAddCreditCard"]').click()
+        self.clickRep('//*[@value="SelectableAddCreditCard"]')
+        self.print("Next Continue done.")
+
+        # #pp-uIL6vG-89
+        #time.sleep(2)
+        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-accountHolderName"]').send_keys(self.debitCard.cardName)
+        self.typeRep('//*[@name="ppw-accountHolderName"]', self.debitCard.cardName)
+        self.print("name")
+        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-expirationDate_month"]/..').click()
+        #self.browser_emulator.find_element_by_xpath(f'(//*[@data-value="{self.debitCard.expMonth}"])').click()
+        self.clickRep('//*[@name="ppw-expirationDate_month"]/..')
+        self.clickRep(f'(//*[@data-value="{self.debitCard.expMonth}"])')
+        self.print("month")
+        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-expirationDate_year"]/..').click()
+        #self.browser_emulator.find_element_by_xpath(f'(//*[@data-value="{self.debitCard.expYear}"])').click()
+        self.clickRep('//*[@name="ppw-expirationDate_year"]/..')
+        self.clickRep(f'(//*[@data-value="{self.debitCard.expYear}"])')
+        self.print("year")
+        #self.browser_emulator.find_element_by_xpath('//*[@name="addCreditCardNumber"]').send_keys(self.debitCard.cardNumber)
+        self.typeRep('//*[@name="addCreditCardNumber"]', self.debitCard.cardNumber)
+        self.print("number")
+        #(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])
+        #self.browser_emulator.find_element_by_xpath('(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])').click()
+        self.clickRep('(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])')
+        self.print("Card found and Added")
+
+        time.sleep(10)
+
+        i = 0
+        while i<50:
+            self.print(i)
+            try:
+                self.browser_emulator.find_element_by_xpath("//*[@name=\"addCreditCardVerificationNumber" + str(i) + "\"]").send_keys(self.debitCard.cvv)
+                self.browser_emulator.find_element_by_xpath("(//input[@type=\"checkbox\"])[" + str(i+1) + "]").click()
+                break
+            except:
+                i += 1
+                continue
+        self.print("CVV Done & box cheked!")
+
+    def buyUsingEMI(self):
+        self.clickRep('//*[@value="instrumentId=EMI&isExpired=false&paymentMethod=CC&tfxEligible=false"]')
+        self.clickRep('(//*[@class="a-button-text a-declarative"])//*[text()="Select EMI options"]')
+        self.clickRep('//*[@data-value="EMI-SelectableAddCreditCard"]')
+        self.typeRep('//*[@name="ppw-accountHolderName_EMI"]', self.debitCard.cardName)
+
+        self.clickRep('(//*[@class="a-dropdown-prompt"])[last()-1]/../..')
+        self.clickRep(f'//*[@id="2_dropdown_combobox"]/li//*[@data-value="{self.debitCard.expMonth}"]')
+
+        self.clickRep('(//*[@class="a-dropdown-prompt"])[last()]/../..')
+        time.sleep(1)
+        self.clickRep(f'//*[@id="3_dropdown_combobox"]/li//*[@data-value="{self.debitCard.expYear}"]')
+
+        self.typeRep('//*[@name="addCreditCardNumber_VCC"]', self.debitCard.cardNumber)
+        
+        self.clickRep('//*[@name="ppw-widgetEvent:AddEmiCreditCardEvent"]')
+
+        time.sleep(10)
+
+        i = 0
+        while i<50:
+            self.print(i)
+            try:
+                self.browser_emulator.find_element_by_xpath("//*[@name=\"addCreditCardVerificationNumber" + str(i) + "\"]").send_keys(self.debitCard.cvv)
+                break
+            except:
+                i += 1
+                continue
+        self.print("CVV Done & box cheked!")
+
+        time.sleep(6)
+
+        i=1
+        while 1:
+            self.print(i)
+            if i==50:
+                break
+            try:
+                self.browser_emulator.find_element_by_xpath("(//span[contains(.,\"Select EMI Tenure\")])[" + str(i) + "]").click()
+                #self.browser_emulator.find_element_by_xpath('(//*[@class="a-fixed-left-grid a-spacing-mini"])[last()]/../div[3]/span').click()
+                #self.browser_emulator.find_element_by_xpath("(//*[text()=\"Select EMI Tenure\"])[" + str(i) + "]").click()
+                print()
+                break
+            except Exception as e:
+                print(e)
+                i += 1
+                continue
+        
+        time.sleep(2)
+        self.clickRep('((//*[@class="a-popover a-popover-modal"])//*[text()="No Cost"])[last()]')
+        time.sleep(2)
+
+        i=1
+        while 1:
+            self.print(i)
+            if i==1000:
+                break
+            try:
+                self.browser_emulator.find_element_by_xpath("((//*[@class=\"a-popover a-popover-modal\"])//span[contains(.,\"Choose EMI Plan\")])[" + str(i) + "]").click()
+                break
+            except Exception as e:
+                print(e)
+                i += 1
+                continue
+        time.sleep(2)
+        
 
     def launch_bot(self):
         """ Initializes bot and emulates selenium browser. 
@@ -158,6 +277,12 @@ class Product:
         """ Helper function to add product to cart."""
         self.print("Buy button reached!")
 
+        try:
+            self.browser_emulator.find_element_by_xpath('//*[@class="a-checkbox a-checkbox-fancy aok-inline-block checkBoxCSS"]/label/i').click()
+            self.print("Coupon Selected!")
+        except:
+            self.print("No Coupon!")
+
         
         #self.browser_emulator.find_element_by_xpath('//*[@id="add-to-cart-button"]').click()
         #self.email_notification()
@@ -165,7 +290,7 @@ class Product:
         self.print("Added to cart by buy button!!")
 
         #attach-close_sideSheet-link
-        time.sleep(1)
+        time.sleep(3)
         try:
             self.browser_emulator.find_element_by_xpath('//*[@id="attach-close_sideSheet-link"]').click()
             self.print("Went to Cart!")
@@ -183,6 +308,8 @@ class Product:
         self.clickRep('//*[@name="proceedToRetailCheckout"]')
         self.print("Checkout page....")
 
+        self.typeRep('//*[@id="cof-text-input-value-0"]', self.poNumber)
+
         #a-autoid-0-announce
         #time.sleep(5)
         #self.browser_emulator.find_element_by_xpath('//*[@id="a-autoid-0"]').click()
@@ -195,54 +322,34 @@ class Product:
         self.clickRep('(//div[@id="address-book-entry-0"]/div[2]/span)[1]')
         self.print("Address Selected....")
 
+        #//input[@type="checkbox"]
+        time.sleep(1)
+
+        try: 
+            self.browser_emulator.find_element_by_xpath('//input[@type="checkbox"]').click()
+            print("service checkbox unselected")
+        except:
+            print("no service button")
+            pass
+
         #sosp-continue-button a-button a-button-primary a-button-span12 a-padding-none  continue-button 
         #time.sleep(2)
         #self.browser_emulator.find_element_by_xpath('(//input[@value="Continue"])[1]').click()
         self.clickRep('(//input[@value="Continue"])[1]')
         self.print("Next Continue done.")
 
-        #SelectableAddCreditCard
-        #time.sleep(2)
-        #self.browser_emulator.find_element_by_xpath('//*[@value="SelectableAddCreditCard"]').click()
-        self.clickRep('//*[@value="SelectableAddCreditCard"]')
-        self.print("Next Continue done.")
+        try:
+            self.buyUsingEMI()
+        except:
+            self.buyUsingCreditCard()
+        
 
-        # #pp-uIL6vG-89
-        #time.sleep(2)
-        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-accountHolderName"]').send_keys(self.debitCard.cardName)
-        self.typeRep('//*[@name="ppw-accountHolderName"]', self.debitCard.cardName)
-        self.print("name")
-        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-expirationDate_month"]/..').click()
-        #self.browser_emulator.find_element_by_xpath(f'(//*[@data-value="{self.debitCard.expMonth}"])').click()
-        self.clickRep('//*[@name="ppw-expirationDate_month"]/..')
-        self.clickRep(f'(//*[@data-value="{self.debitCard.expMonth}"])')
-        self.print("month")
-        #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-expirationDate_year"]/..').click()
-        #self.browser_emulator.find_element_by_xpath(f'(//*[@data-value="{self.debitCard.expYear}"])').click()
-        self.clickRep('//*[@name="ppw-expirationDate_year"]/..')
-        self.clickRep(f'(//*[@data-value="{self.debitCard.expYear}"])')
-        self.print("year")
-        #self.browser_emulator.find_element_by_xpath('//*[@name="addCreditCardNumber"]').send_keys(self.debitCard.cardNumber)
-        self.typeRep('//*[@name="addCreditCardNumber"]', self.debitCard.cardNumber)
-        self.print("number")
-        #(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])
-        #self.browser_emulator.find_element_by_xpath('(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])').click()
-        self.clickRep('(//*[@name="ppw-widgetEvent:AddCreditCardEvent"])')
-        self.print("Card found and Added")
+        #######
+        #(//*[text()="No Cost"])
+        #((//*[@class="a-popover a-popover-modal"])[last()]//*[text()="No Cost"])[last()]
+        ########
 
-        time.sleep(3)
-
-        i = 0
-        while i<50:
-            self.print(i)
-            try:
-                self.browser_emulator.find_element_by_xpath("//*[@name=\"addCreditCardVerificationNumber" + str(i) + "\"]").send_keys(self.debitCard.cvv)
-                self.browser_emulator.find_element_by_xpath("(//input[@type=\"checkbox\"])[" + str(i+1) + "]").click()
-                break
-            except:
-                i += 1
-                continue
-        self.print("CVV Done & box cheked!")
+        
 
         #ppw-widgetEvent:SetPaymentPlanSelectContinueEvent
         #self.browser_emulator.find_element_by_xpath('//*[@name="ppw-widgetEvent:SetPaymentPlanSelectContinueEvent"]').click()
@@ -269,6 +376,33 @@ class Product:
         except:
             self.print("Failwa!")
 
+        time.sleep(5)
+
+        try: 
+            self.browser_emulator.find_element_by_xpath('(//input[@value="Continue"])[1]').click()
+            print("continue")
+        except:
+            print("No page after place order....")
+            pass
+
+        time.sleep(5)
+
+        try: 
+            self.browser_emulator.find_element_by_xpath('(//div[@id="address-book-entry-0"]/div[2]/span)[1]').click()
+            print("address")
+        except:
+            print("No address page after place order....")
+            pass
+
+        time.sleep(5)
+
+        try: 
+            self.browser_emulator.find_element_by_xpath('//*[@id="placeYourOrder"]').click()
+            print("place order")
+        except:
+            print("No place order page after place order....")
+            pass
+
         # staticAuthOpen
         time.sleep(5)
         self.browser_emulator.find_element_by_xpath('//*[@id="staticAuthOpen"]').click()
@@ -279,7 +413,7 @@ class Product:
         # self.browser_emulator.find_element_by_xpath('//*[@id="cmdSubmitStatic"]').click()
         # self.print("Payment Done!!")
 
-        # time.sleep(60)
+        # time.sleep(30)
 
         self.browser_emulator.quit()
 
@@ -288,10 +422,11 @@ def multiCall(orderEntry):
     linkTo = orderEntry.link
     amazonId = orderEntry.AmazonID
     debitCard = orderEntry.DebitCard
+    poNumber = orderEntry.poNumber
 
     print(f"Call id : {linkTo} ----- {amazonId.email}")
     product = linkTo
-    bot = Product(p_url=product, amazon_id = amazonId, debit_card = debitCard)
+    bot = Product(p_url=product, amazon_id = amazonId, debit_card = debitCard, po_number = poNumber)
     bot.launch_bot()
     bot.user_login_session()
     bot.check_availability()
@@ -315,12 +450,13 @@ if __name__ == '__main__':
     #         # AmazonID('oswaltrading908@gmail.com', 'oswal@1234', '0')
     #         ]
 
-    csv_file = csv_file.iloc[:,:10].dropna()
+    csv_file = csv_file.iloc[:,:11].dropna()
     argsTuple = []
     for ind,row in csv_file.iterrows():
+        #print(row.staticPass)
         debitCard = DebitCard(row.cardName, row.cardNumber, row.expMonth, row.expYear, row.cvv, row.staticPass)
         amazonId = AmazonID(row.email, row.password, row.phoneNumber)
-        orderEntry  = OrderEntry(row.link, amazonId, debitCard)
+        orderEntry  = OrderEntry(row.link, amazonId, debitCard, row.poNumber)
         argsTuple.append(orderEntry)
 
     #argsTuple = [OrderEntry("https://www.amazon.in/Apple-iPhone-13-128GB-Midnight/dp/B09G9HD6PD/ref=sr_1_1?crid=36PE1RR5TWQ8N&keywords=iphone13&qid=1656267544&sprefix=iphone13%2Caps%2C225&sr=8-1", i, debitCards[0]) for i in ids]

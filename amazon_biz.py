@@ -201,9 +201,12 @@ class Product:
         """ Initializes bot and emulates selenium browser. 
         It goes to login page first. """
 
-        options = Options()
-        options.set_headless(headless=true)
-        self.browser_emulator = webdriver.Firefox(firefox_options=options)
+        try:
+            options = Options()
+            options.set_headless(headless=true)
+            self.browser_emulator = webdriver.Firefox(firefox_options=options)
+        except Exception as e:
+            print(e)
         
         # chrome_options = Options()
         # chrome_options.add_argument('--headless')

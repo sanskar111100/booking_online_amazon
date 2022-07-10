@@ -203,7 +203,7 @@ class Product:
 
         try:
             options = Options()
-            options.set_headless(headless=True)
+            options.set_headless(headless=False)
             self.browser_emulator = webdriver.Firefox(firefox_options=options, executable_path="/usr/local/bin/geckodriver")
         except Exception as e:
             print(e)
